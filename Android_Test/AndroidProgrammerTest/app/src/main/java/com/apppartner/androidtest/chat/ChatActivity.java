@@ -30,12 +30,12 @@ public class ChatActivity extends AppCompatActivity
     // Class Properties
     //==============================================================================================
 
-    protected static final String ENDPOINT = "http://dev3.apppartner.com/AppPartnerDeveloperTest/scripts/chat_log.php";
+    protected static final String TAG = ChatActivity.class.getSimpleName();
 
     private RecyclerView recyclerView;
     private ChatAdapter chatAdapter;
 
-    protected String mChatDataJson;
+    protected List<ChatLogMessageModel> mChatLogs = new ArrayList<>();
 
     //==============================================================================================
     // Static Class Methods
@@ -56,7 +56,7 @@ public class ChatActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
 
-        new ChatTask().execute(ENDPOINT);
+        new ChatTask().execute();
 
         setContentView(R.layout.activity_chat);
 
@@ -106,18 +106,18 @@ public class ChatActivity extends AppCompatActivity
     }
 
     protected void updateUI() {
-
+        chatAdapter.setChatLogMessageModelList(mChatLogs);
     }
 
-    private class ChatTask extends AsyncTask<String, Void, String> {
+    private class ChatTask extends AsyncTask<Void, Void, List<ChatLogMessageModel>> {
         @Override
-        protected String doInBackground(String... urls) {
-            String url = urls[0];
-            return new ChatFetchr().getUrlString(url);
+        protected List<ChatLogMessageModel> doInBackground(Void... params) {
+            List<ChatLogMessageModel> chatLogs = new ChatFetchr().fetchChatLogs();
+            return chatLogs;
         }
         @Override
-        protected void onPostExecute(String result) {
-            mChatDataJson = result;
+        protected void onPostExecute(List<ChatLogMessageModel> result) {
+            mChatLogs = result;
             updateUI();
         }
     }

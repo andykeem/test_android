@@ -3,67 +3,60 @@ package com.apppartner.androidtest.helper;
 import android.net.Uri;
 import android.util.Log;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
+import com.apppartner.androidtest.api.ChatLogMessageModel;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by foo on 2/12/18.
  */
 
-public class ChatFetchr {
+public class ChatFetchr extends HttpClient {
 
-    protected static final String TAG = "ChatFetchr";
+    protected static final String TAG = ChatFetchr.class.getSimpleName();
+    protected static final String HOST = "http://dev3.apppartner.com/";
+    protected static final String PATH = "AppPartnerDeveloperTest/scripts/chat_log.php";
 
-    public String getUrlString(String url) {
-        String resp = null;
-        byte[] bytes = this.getUrlBytes(url);
-        resp = new String(bytes);
-        parseJson(resp);
-        return resp;
-    }
-
-    protected byte[] getUrlBytes(String spec) {
-        HttpURLConnection conn = null;
-        InputStream in = null;
-        ByteArrayOutputStream out = null;
-        try {
-            URL url = new URL(spec);
-            conn = (HttpURLConnection) url.openConnection();
-            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                return null;
-            }
-            in = conn.getInputStream();
-            out = new ByteArrayOutputStream();
-            byte[] bytes = new byte[1024];
-            int bytesRead = 0;
-            while ((bytesRead = in.read(bytes)) > -1) {
-                out.write(bytes, 0, bytesRead);
-            }
-            in.close();
-            out.close();
-            return out.toByteArray();
-        } catch (MalformedURLException mue) {
-            Log.e(TAG, mue.getMessage(), mue);
-        } catch (IOException ioe) {
-            Log.e(TAG, ioe.getMessage(), ioe);
-        } finally {
-            conn.disconnect();
-        }
-        return null;
-    }
-
-    protected Uri parseUrl(String url) {
-        return Uri.parse(url).buildUpon()
+    protected Uri getEndpoint() {
+        return Uri.parse(HOST).buildUpon()
+                .appendEncodedPath(PATH)
                 .build();
     }
 
-    protected void parseJson(String resp) {
+    public List<ChatLogMessageModel> fetchChatLogs() {
+        String endpoint = this.getEndpoint().toString();
+        String resp = this.getUrlString(endpoint);
+        return this.parseJson(resp);
+    }
 
+    protected List<ChatLogMessageModel> parseJson(String json) {
+        List<ChatLogMessageModel> items = new ArrayList<>();
+        try {
+            JSONObject jobj = (JSONObject) new JSONTokener(json).nextValue();
+            JSONArray jarr = jobj.getJSONArray("data");
+            int numObjs = jarr.length();
+            for (int i = 0; i < numObjs; i++) {
+                JSONObject item = (JSONObject) jarr.get(i);
+                int userId = item.getInt("user_id");
+                String userName = item.getString("username");
+                String avatarUrl = item.getString("avatar_url");
+                String message = item.getString("message");
+                ChatLogMessageModel chatLog = new ChatLogMessageModel();
+                chatLog.setUserId(userId);
+                chatLog.setUsername(userName);
+                chatLog.setAvatarUrl(avatarUrl);
+                chatLog.setMessage(message);
+                items.add(chatLog);
+            }
+        } catch (JSONException je) {
+            Log.e(TAG, je.getMessage(), je);
+        }
+        return items;
     }
 }
