@@ -30,7 +30,7 @@ public class ChatActivity extends AppCompatActivity
     // Class Properties
     //==============================================================================================
 
-    protected static final String URL = "http://dev3.apppartner.com/AppPartnerDeveloperTest/scripts/chat_log.php";
+    protected static final String ENDPOINT = "http://dev3.apppartner.com/AppPartnerDeveloperTest/scripts/chat_log.php";
 
     private RecyclerView recyclerView;
     private ChatAdapter chatAdapter;
@@ -56,7 +56,7 @@ public class ChatActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
 
-        new ChatTask().execute(URL);
+        new ChatTask().execute(ENDPOINT);
 
         setContentView(R.layout.activity_chat);
 

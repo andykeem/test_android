@@ -22,21 +22,19 @@ public class ChatFetchr {
 
     public String getUrlString(String url) {
         String resp = null;
-        try {
-            byte[] bytes = this.getUrlBytes(url);
-            resp = new String(bytes);
-        } catch (IOException ioe) {
-            Log.e(TAG, ioe.getMessage(), ioe);
-        }
+        byte[] bytes = this.getUrlBytes(url);
+        resp = new String(bytes);
+        parseJson(resp);
         return resp;
     }
 
-    protected byte[] getUrlBytes(String spec) throws IOException {
+    protected byte[] getUrlBytes(String spec) {
+        HttpURLConnection conn = null;
         InputStream in = null;
         ByteArrayOutputStream out = null;
         try {
             URL url = new URL(spec);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn = (HttpURLConnection) url.openConnection();
             if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 return null;
             }
@@ -47,15 +45,15 @@ public class ChatFetchr {
             while ((bytesRead = in.read(bytes)) > -1) {
                 out.write(bytes, 0, bytesRead);
             }
-            conn.disconnect();
+            in.close();
+            out.close();
             return out.toByteArray();
         } catch (MalformedURLException mue) {
             Log.e(TAG, mue.getMessage(), mue);
         } catch (IOException ioe) {
             Log.e(TAG, ioe.getMessage(), ioe);
         } finally {
-            in.close();
-            out.close();
+            conn.disconnect();
         }
         return null;
     }
@@ -63,5 +61,9 @@ public class ChatFetchr {
     protected Uri parseUrl(String url) {
         return Uri.parse(url).buildUpon()
                 .build();
+    }
+
+    protected void parseJson(String resp) {
+
     }
 }
