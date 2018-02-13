@@ -2,6 +2,7 @@ package com.apppartner.androidtest.chat;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -11,6 +12,7 @@ import android.support.v7.widget.RecyclerView;
 import com.apppartner.androidtest.MainActivity;
 import com.apppartner.androidtest.R;
 import com.apppartner.androidtest.api.ChatLogMessageModel;
+import com.apppartner.androidtest.helper.ChatFetchr;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,8 +30,12 @@ public class ChatActivity extends AppCompatActivity
     // Class Properties
     //==============================================================================================
 
+    protected static final String URL = "http://dev3.apppartner.com/AppPartnerDeveloperTest/scripts/chat_log.php";
+
     private RecyclerView recyclerView;
     private ChatAdapter chatAdapter;
+
+    protected String mChatDataJson;
 
     //==============================================================================================
     // Static Class Methods
@@ -49,6 +55,9 @@ public class ChatActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
+        new ChatTask().execute(URL);
+
         setContentView(R.layout.activity_chat);
 
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
@@ -94,5 +103,22 @@ public class ChatActivity extends AppCompatActivity
     {
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
+    }
+
+    protected void updateUI() {
+
+    }
+
+    private class ChatTask extends AsyncTask<String, Void, String> {
+        @Override
+        protected String doInBackground(String... urls) {
+            String url = urls[0];
+            return new ChatFetchr().getUrlString(url);
+        }
+        @Override
+        protected void onPostExecute(String result) {
+            mChatDataJson = result;
+            updateUI();
+        }
     }
 }

@@ -8,4 +8,5 @@
     <color name="button_orange">#F26724</color>
     <color name="button_mango">#F89A20</color>
     <color name="chat_text">#747474</color>
+    <color name="ripple_effect">@android:color/background_light</color>
 </resources>
