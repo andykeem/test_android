@@ -20,6 +20,9 @@
         android:background="@color/button_mango"
         android:textColor="@android:color/white"
         android:text="@string/fade_button"
-        android:foreground="?attr/selectableItemBackground"/>
+        android:foreground="?attr/selectableItemBackground"
+        android:marginBottom="16dp"
+        android:marginRight="16dp"
+        android:marginLeft="16dp"/>
 
 </RelativeLayout>
