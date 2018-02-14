@@ -1,5 +1,6 @@
 package com.apppartner.androidtest.chat;
 
+import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +10,7 @@ import android.widget.TextView;
 
 import com.apppartner.androidtest.R;
 import com.apppartner.androidtest.api.ChatLogMessageModel;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,13 +29,14 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
     //==============================================================================================
 
     private List<ChatLogMessageModel> chatLogMessageModelList;
-
+    protected Context mContext;
     //==============================================================================================
     // Constructor
     //==============================================================================================
 
-    public ChatAdapter()
+    public ChatAdapter(Context context)
     {
+        mContext = context;
         chatLogMessageModelList = new ArrayList<>();
     }
 
@@ -67,6 +70,10 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
         ChatLogMessageModel chatLogMessageModel = chatLogMessageModelList.get(position);
 
         viewHolder.messageTextView.setText(chatLogMessageModel.message);
+
+        // load avatar image using Picasso library..
+        String avatarUrl = chatLogMessageModel.getAvatarUrl();
+        Picasso.with(mContext).load(avatarUrl).into(viewHolder.avatarImageView);
     }
 
     @Override

@@ -8,5 +8,6 @@
     <string name="chat_button">CHAT</string>
     <string name="login_button">LOG IN</string>
     <string name="animation_button">ANIMATION</string>
+    <string name="fade_button">FADE</string>
 
 </resources>

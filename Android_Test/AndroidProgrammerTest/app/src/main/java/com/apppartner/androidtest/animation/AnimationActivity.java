@@ -5,6 +5,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.widget.Button;
+import android.widget.ImageView;
 
 import com.apppartner.androidtest.MainActivity;
 import com.apppartner.androidtest.R;
@@ -22,6 +28,8 @@ public class AnimationActivity extends AppCompatActivity
     //==============================================================================================
     // Class Properties
     //==============================================================================================
+    protected Button mBtnFade;
+    protected ImageView mIvLogo;
 
     //==============================================================================================
     // Static Class Methods
@@ -59,6 +67,36 @@ public class AnimationActivity extends AppCompatActivity
 
         // TODO: Add a bonus to make yourself stick out. Music, color, fireworks, explosions!!!
 
+        mIvLogo = (ImageView) this.findViewById(R.id.iv_app_partner_logo);
+        mBtnFade = (Button) this.findViewById(R.id.btn_face);
+        mBtnFade.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Animation fadeOut = new AlphaAnimation(1, 0);
+                fadeOut.setDuration(3000);
+                fadeOut.setInterpolator(new AccelerateInterpolator());
+                mIvLogo.startAnimation(fadeOut);
+                fadeOut.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        Animation fadeIn = new AlphaAnimation(0, 1);
+                        fadeIn.setDuration(3000);
+                        fadeIn.setInterpolator(new AccelerateInterpolator());
+                        mIvLogo.startAnimation(fadeIn);
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+
+                    }
+                });
+            }
+        });
     }
 
     @Override

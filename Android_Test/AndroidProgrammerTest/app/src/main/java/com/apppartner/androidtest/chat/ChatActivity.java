@@ -68,7 +68,7 @@ public class ChatActivity extends AppCompatActivity
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowHomeEnabled(true);
 
-        chatAdapter = new ChatAdapter();
+        chatAdapter = new ChatAdapter(this);
 
         recyclerView.setAdapter(chatAdapter);
         recyclerView.setHasFixedSize(true);
