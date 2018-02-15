@@ -3,15 +3,15 @@
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                tools:context=".chat.ChatActivity"
-                android:layout_marginTop="6dp"
-                android:layout_marginBottom="6dp">
+                tools:context=".chat.ChatActivity">
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scrollbars="vertical"
-        tools:listitem="@layout/item_chat"/>
+        tools:listitem="@layout/item_chat"
+        android:clipToPadding="false"
+        android:paddingTop="@dimen/activity_vertical_margin"/>
 
 </RelativeLayout>
