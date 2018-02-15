@@ -13,10 +13,6 @@ import org.json.JSONTokener;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by foo on 2/12/18.
- */
-
 public class ChatFetchr extends HttpClient {
 
     protected static final String TAG = ChatFetchr.class.getSimpleName();

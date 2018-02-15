@@ -9,10 +9,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-/**
- * Created by foo on 2/13/18.
- */
-
 public class HttpClient {
 
     protected static final String TAG = HttpClient.class.getSimpleName();
