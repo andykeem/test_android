@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.apppartner.androidtest.R;
 import com.apppartner.androidtest.api.ChatLogMessageModel;
+import com.apppartner.androidtest.helper.CircleTransform;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -73,7 +74,9 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
 
         // load avatar image using Picasso library..
         String avatarUrl = chatLogMessageModel.getAvatarUrl();
-        Picasso.with(mContext).load(avatarUrl).into(viewHolder.avatarImageView);
+        Picasso.with(mContext).load(avatarUrl)
+                .transform(new CircleTransform())
+                .into(viewHolder.avatarImageView);
     }
 
     @Override

@@ -3,7 +3,10 @@
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                tools:context="com.apppartner.androidtest.animation.AnimationActivity">
+                tools:context="com.apppartner.androidtest.animation.AnimationActivity"
+    android:paddingLeft="@dimen/activity_vertical_margin"
+    android:paddingRight="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_horizontal_margin">
 
     <ImageView
         android:layout_width="wrap_content"
@@ -20,9 +23,6 @@
         android:background="@color/button_mango"
         android:textColor="@android:color/white"
         android:text="@string/fade_button"
-        android:foreground="?attr/selectableItemBackground"
-        android:marginBottom="16dp"
-        android:marginRight="16dp"
-        android:marginLeft="16dp"/>
+        android:foreground="?attr/selectableItemBackground"/>
 
 </RelativeLayout>
