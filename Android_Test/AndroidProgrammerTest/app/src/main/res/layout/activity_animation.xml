@@ -14,7 +14,8 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:src="@drawable/ic_app_partner_logo"
-        android:id="@+id/iv_app_partner_logo"/>
+        android:id="@+id/iv_app_partner_logo"
+        android:background="@drawable/border"/>
 
     <Button
         android:layout_width="match_parent"

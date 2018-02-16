@@ -3,13 +3,11 @@ package com.apppartner.androidtest.animation;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Point;
-import android.hardware.display.DisplayManager;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.util.DisplayMetrics;
+import android.util.AttributeSet;
 import android.util.Log;
-import android.view.DragEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,6 +42,8 @@ public class AnimationActivity extends AppCompatActivity
     protected int mIvLogoHeight;
     protected int mDeviceWidth;
     protected int mDeviceHeight;
+    protected int mInitTop;
+    protected int mInitLeft;
 
     //==============================================================================================
     // Static Class Methods
@@ -82,56 +82,68 @@ public class AnimationActivity extends AppCompatActivity
         // TODO: Add a bonus to make yourself stick out. Music, color, fireworks, explosions!!!
 
         Point outSize = new Point();
-        this.getWindowManager().getDefaultDisplay().getSize(outSize);
+        this.getWindowManager().getDefaultDisplay().getRealSize(outSize);
         mDeviceWidth = outSize.x;
         mDeviceHeight = outSize.y;
-
-        Log.d(TAG, "w: " + mDeviceWidth + ", h: " + mDeviceHeight);
 
         mIvLogo = (ImageView) this.findViewById(R.id.iv_app_partner_logo);
         final RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) mIvLogo.getLayoutParams();
         mIvLogoWidth = mIvLogo.getWidth();
         mIvLogoHeight = mIvLogo.getHeight();
+
+//        mInitTop = layoutParams.topMargin;
+//        mInitLeft = layoutParams.leftMargin;
+
         mIvLogo.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-//                RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
-                Log.d(TAG,"view w: " + view.getWidth() + ", view h: " + view.getHeight());
+                RelativeLayout.LayoutParams lParams = null;
                 int x = (int) motionEvent.getRawX();
                 int y = (int) motionEvent.getRawY();
-                Log.d(TAG, "x: " + x + ", y: " + y);
+//                Log.d(TAG, "x: " + x + ", y: " + y);
                 int action = motionEvent.getAction();
                 switch (action) {
                     case MotionEvent.ACTION_DOWN:
-                        layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT, 0);
+                    case MotionEvent.ACTION_UP:
+                        lParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
+                        mInitTop = lParams.topMargin;
+                        mInitLeft = lParams.leftMargin;
+//                        view.setLayoutParams(lParams);
                         break;
                     case MotionEvent.ACTION_MOVE:
-                        int maxX = x + mIvLogoWidth;
-                        int maxY = y + mIvLogoHeight;
-                        if (maxX > mDeviceWidth) {
-                            x = mDeviceWidth - mIvLogoWidth;
-                        } else if (x < 0) {
-                            x = 0;
+                        lParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
+                        lParams.removeRule(RelativeLayout.CENTER_IN_PARENT);
+
+                        int viewWidth = view.getWidth();
+                        int viewHeight = view.getHeight();
+
+                        if (mInitTop > 0) {
+//                            mInitTop = lParams.topMargin;
                         }
-                        if (maxY > mDeviceHeight) {
-                            y = mDeviceHeight - mIvLogoHeight;
-                        } else if (y < 0) {
-                            y = 0;
+                        if (mInitLeft > 0) {
+//                            mInitLeft = lParams.leftMargin;
                         }
-                        Log.d(TAG, "x2: " + x + ", y2: " + y);
-                        Log.d(TAG,"view w: " + view.getWidth() + ", view h: " + view.getHeight());
-                        layoutParams.leftMargin = x;
-                        layoutParams.topMargin = y;
+
+                        lParams.topMargin = y; // (y - mInitTop);
+                        lParams.leftMargin = x; // (x - mInitLeft);
+
+                        // check device boundaries
+
+
+
+
+                        lParams.bottomMargin = (viewHeight * -1);
+                        lParams.rightMargin = (viewWidth * -1);
+                        view.setLayoutParams(lParams);
                         break;
                 }
-                view.setLayoutParams(layoutParams);
                 view.invalidate();
                 return true;
             }
         });
 
         mBtnFade = (Button) this.findViewById(R.id.btn_face);
-        /*mBtnFade.setOnClickListener(new View.OnClickListener() {
+        mBtnFade.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Animation fadeOut = new AlphaAnimation(1, 0);
@@ -158,7 +170,7 @@ public class AnimationActivity extends AppCompatActivity
                     }
                 });
             }
-        });*/
+        });
     }
 
     @Override
