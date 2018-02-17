@@ -6,11 +6,9 @@ import android.graphics.Point;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.util.AttributeSet;
-import android.util.Log;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -18,6 +16,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import com.apppartner.androidtest.BaseActivity;
 import com.apppartner.androidtest.MainActivity;
 import com.apppartner.androidtest.R;
 
@@ -29,21 +28,21 @@ import com.apppartner.androidtest.R;
  *
  * @author Thomas Colligan
  */
-public class AnimationActivity extends AppCompatActivity
+public class AnimationActivity extends BaseActivity
 {
     //==============================================================================================
     // Class Properties
     //==============================================================================================
     protected static final String TAG = AnimationActivity.class.getSimpleName();
-    protected static final long FADE_ANIM_DURATION_MILLIS = 3000;
+    protected static final long FADE_ANIM_DURATION_MILLIS = 5000;
+    protected View mAnimContainer;
     protected Button mBtnFade;
     protected ImageView mIvLogo;
-    protected int mIvLogoWidth;
-    protected int mIvLogoHeight;
     protected int mDeviceWidth;
-    protected int mDeviceHeight;
-    protected int mInitTop;
-    protected int mInitLeft;
+//    protected int mDeviceHeight;
+    protected int mDeltaX;
+    protected int mDeltaY;
+    protected int mBtnFadeTop;
 
     //==============================================================================================
     // Static Class Methods
@@ -66,7 +65,7 @@ public class AnimationActivity extends AppCompatActivity
         setContentView(R.layout.activity_animation);
 
         ActionBar actionBar = getSupportActionBar();
-
+        actionBar.setTitle(R.string.activity_animation_title);
         assert actionBar != null;
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowHomeEnabled(true);
@@ -81,67 +80,75 @@ public class AnimationActivity extends AppCompatActivity
 
         // TODO: Add a bonus to make yourself stick out. Music, color, fireworks, explosions!!!
 
+        mAnimContainer = this.findViewById(R.id.anim_container);
         Point outSize = new Point();
-        this.getWindowManager().getDefaultDisplay().getRealSize(outSize);
+        this.getWindowManager().getDefaultDisplay().getSize(outSize);
         mDeviceWidth = outSize.x;
-        mDeviceHeight = outSize.y;
+//        mDeviceHeight = outSize.y;
 
         mIvLogo = (ImageView) this.findViewById(R.id.iv_app_partner_logo);
-        final RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) mIvLogo.getLayoutParams();
-        mIvLogoWidth = mIvLogo.getWidth();
-        mIvLogoHeight = mIvLogo.getHeight();
-
-//        mInitTop = layoutParams.topMargin;
-//        mInitLeft = layoutParams.leftMargin;
-
         mIvLogo.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-                RelativeLayout.LayoutParams lParams = null;
                 int x = (int) motionEvent.getRawX();
                 int y = (int) motionEvent.getRawY();
-//                Log.d(TAG, "x: " + x + ", y: " + y);
                 int action = motionEvent.getAction();
-                switch (action) {
+                switch (action & MotionEvent.ACTION_MASK) {
                     case MotionEvent.ACTION_DOWN:
                     case MotionEvent.ACTION_UP:
-                        lParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
-                        mInitTop = lParams.topMargin;
-                        mInitLeft = lParams.leftMargin;
-//                        view.setLayoutParams(lParams);
+                    case MotionEvent.ACTION_POINTER_DOWN:
+                    case MotionEvent.ACTION_POINTER_UP:
+                        RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) view.getLayoutParams();
+                        lp.addRule(RelativeLayout.CENTER_IN_PARENT, 0);
+                        if (lp.leftMargin == 0) {
+                            lp.leftMargin = view.getLeft();
+                        }
+                        if (lp.topMargin == 0) {
+                            lp.topMargin = view.getTop();
+                        }
+                        // save delta (x, y) so we can use them when we drag the logo..
+                        mDeltaX = (x - lp.leftMargin);
+                        mDeltaY = (y - lp.topMargin);
+                        view.setLayoutParams(lp);
                         break;
-                    case MotionEvent.ACTION_MOVE:
-                        lParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
-                        lParams.removeRule(RelativeLayout.CENTER_IN_PARENT);
-
+                    case MotionEvent.ACTION_MOVE: // dragging..
+                        RelativeLayout.LayoutParams lParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
                         int viewWidth = view.getWidth();
                         int viewHeight = view.getHeight();
 
-                        if (mInitTop > 0) {
-//                            mInitTop = lParams.topMargin;
+                        int leftMargin = (x - mDeltaX);
+                        int topMargin = (y - mDeltaY);
+
+                        // handle horizontal device boundaries..
+                        if (leftMargin < 0) {
+                            leftMargin = 0;
+                        } else if ((leftMargin + viewWidth) > mDeviceWidth) {
+                            leftMargin = (mDeviceWidth - viewWidth);
                         }
-                        if (mInitLeft > 0) {
-//                            mInitLeft = lParams.leftMargin;
+
+                        // handle vertical device boundaries..
+                        mBtnFadeTop = mBtnFade.getTop();
+                        if (topMargin < 0) {
+                            topMargin = 0;
+                        } else if ((topMargin + viewHeight) > mBtnFadeTop) {
+                            topMargin = (mBtnFadeTop - viewHeight);
                         }
 
-                        lParams.topMargin = y; // (y - mInitTop);
-                        lParams.leftMargin = x; // (x - mInitLeft);
+                        lParams.leftMargin = leftMargin;
+                        lParams.topMargin = topMargin;
 
-                        // check device boundaries
-
-
-
-
+                        // handle bottom right shrinking issue..
                         lParams.bottomMargin = (viewHeight * -1);
                         lParams.rightMargin = (viewWidth * -1);
                         view.setLayoutParams(lParams);
                         break;
                 }
-                view.invalidate();
+                mAnimContainer.invalidate();
                 return true;
             }
         });
 
+        // handle [FADE] button click's fade in / out animations..
         mBtnFade = (Button) this.findViewById(R.id.btn_face);
         mBtnFade.setOnClickListener(new View.OnClickListener() {
             @Override

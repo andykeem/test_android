@@ -9,5 +9,9 @@
     <string name="login_button">LOG IN</string>
     <string name="animation_button">ANIMATION</string>
     <string name="fade_button">FADE</string>
+    <string name="activity_chat_title">Chat</string>
+    <string name="activity_animation_title">Acnimation</string>
+    <string name="activity_login_title">Log In</string>
+    <string name="title_activity_base">BaseActivity</string>
 
 </resources>

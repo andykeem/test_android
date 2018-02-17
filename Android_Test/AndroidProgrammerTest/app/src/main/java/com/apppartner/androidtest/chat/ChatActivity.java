@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
+import com.apppartner.androidtest.BaseActivity;
 import com.apppartner.androidtest.MainActivity;
 import com.apppartner.androidtest.R;
 import com.apppartner.androidtest.api.ChatLogMessageModel;
@@ -24,7 +25,7 @@ import java.util.List;
  *
  * @author Thomas Colligan
  */
-public class ChatActivity extends AppCompatActivity
+public class ChatActivity extends BaseActivity
 {
     //==============================================================================================
     // Class Properties
@@ -63,7 +64,7 @@ public class ChatActivity extends AppCompatActivity
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
 
         ActionBar actionBar = getSupportActionBar();
-
+        actionBar.setTitle(R.string.activity_chat_title);
         assert actionBar != null;
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowHomeEnabled(true);

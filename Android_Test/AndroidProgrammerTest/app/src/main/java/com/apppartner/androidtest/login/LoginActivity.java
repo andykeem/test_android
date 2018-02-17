@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 
+import com.apppartner.androidtest.BaseActivity;
 import com.apppartner.androidtest.MainActivity;
 import com.apppartner.androidtest.R;
 
@@ -16,7 +17,7 @@ import com.apppartner.androidtest.R;
  *
  * @author Thomas Colligan
  */
-public class LoginActivity extends AppCompatActivity
+public class LoginActivity extends BaseActivity
 {
 
     //==============================================================================================
@@ -40,7 +41,7 @@ public class LoginActivity extends AppCompatActivity
         setContentView(R.layout.activity_login);
 
         ActionBar actionBar = getSupportActionBar();
-
+        actionBar.setTitle(R.string.activity_login_title);
         assert actionBar != null;
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowHomeEnabled(true);
