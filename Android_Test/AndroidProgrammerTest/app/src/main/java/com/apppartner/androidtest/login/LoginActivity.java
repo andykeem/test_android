@@ -33,12 +33,16 @@ import retrofit2.Response;
 public class LoginActivity extends BaseActivity
 {
     protected static final String TAG = LoginActivity.class.getSimpleName();
+    protected static final String STATE_USERNAME = "username";
+    protected static final String STATE_PASSWORD = "password";
     protected EditText mEtUsername;
     protected EditText mEtPassword;
     protected Button mBtnLogin;
     protected LoginResponse mLoginResponse;
     protected long mStartTime;
     protected long mElapsedTime;
+    protected String mUsername;
+    protected String mPassword;
 
     //==============================================================================================
     // Static Class Methods
@@ -87,9 +91,9 @@ public class LoginActivity extends BaseActivity
         mBtnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String username = mEtUsername.getText().toString();
-                String password = mEtPassword.getText().toString();
-                loginUser(username, password);
+                mUsername = mEtUsername.getText().toString();
+                mPassword = mEtPassword.getText().toString();
+                loginUser();
             }
         });
     }
@@ -99,6 +103,20 @@ public class LoginActivity extends BaseActivity
     {
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putString(STATE_USERNAME, mUsername);
+        outState.putString(STATE_PASSWORD, mPassword);
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        mUsername = savedInstanceState.getString(STATE_USERNAME);
+        mPassword = savedInstanceState.getString(STATE_PASSWORD);
     }
 
     public void updateUI() {
@@ -122,10 +140,10 @@ public class LoginActivity extends BaseActivity
                 .show();
     }
 
-    protected void loginUser(String username, String password) {
+    protected void loginUser() {
         mStartTime = System.currentTimeMillis();
         LoginClient.LoginService service = new LoginClient().getService();
-        service.login(username, password).enqueue(new Callback<LoginResponse>() {
+        service.login(mUsername, mPassword).enqueue(new Callback<LoginResponse>() {
             @Override
             public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
                 mElapsedTime = (System.currentTimeMillis() - mStartTime);

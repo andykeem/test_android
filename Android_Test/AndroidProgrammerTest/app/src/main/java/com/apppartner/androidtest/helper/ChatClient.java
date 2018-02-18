@@ -23,10 +23,7 @@ public class ChatClient {
     }
 
     public ChatService getChatService() {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
+        Retrofit retrofit = RetrofitFactory.getRetrofit();
         ChatService service = retrofit.create(ChatService.class);
         return service;
     }

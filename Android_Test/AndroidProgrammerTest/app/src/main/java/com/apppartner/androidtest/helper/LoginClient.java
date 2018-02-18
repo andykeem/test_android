@@ -18,7 +18,6 @@ import retrofit2.http.POST;
 public class LoginClient {
 
     protected static final String TAG = LoginClient.class.getSimpleName();
-    protected static final String BASE_URL = "http://dev3.apppartner.com";
 
     public interface LoginService {
         @FormUrlEncoded
@@ -27,17 +26,7 @@ public class LoginClient {
     }
 
     public LoginService getService() {
-        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
-        OkHttpClient.Builder client = new OkHttpClient.Builder();
-        client.addInterceptor(logging);
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .client(client.build())
-                .build();
-
+        Retrofit retrofit = RetrofitFactory.getRetrofit();
         LoginService service = retrofit.create(LoginService.class);
         return service;
     }

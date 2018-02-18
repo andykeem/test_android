@@ -3,10 +3,11 @@ package com.apppartner.androidtest.animation;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Point;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
@@ -35,14 +36,17 @@ public class AnimationActivity extends BaseActivity
     //==============================================================================================
     protected static final String TAG = AnimationActivity.class.getSimpleName();
     protected static final long FADE_ANIM_DURATION_MILLIS = 5000;
+
     protected View mAnimContainer;
     protected Button mBtnFade;
     protected ImageView mIvLogo;
     protected int mDeviceWidth;
-//    protected int mDeviceHeight;
     protected int mDeltaX;
     protected int mDeltaY;
     protected int mBtnFadeTop;
+    protected MediaPlayer mPlayer;
+    protected int mPlayerCurrentPos;
+    protected Handler mMusicHandler;
 
     //==============================================================================================
     // Static Class Methods
@@ -84,7 +88,6 @@ public class AnimationActivity extends BaseActivity
         Point outSize = new Point();
         this.getWindowManager().getDefaultDisplay().getSize(outSize);
         mDeviceWidth = outSize.x;
-//        mDeviceHeight = outSize.y;
 
         mIvLogo = (ImageView) this.findViewById(R.id.iv_app_partner_logo);
         mIvLogo.setOnTouchListener(new View.OnTouchListener() {
@@ -178,6 +181,12 @@ public class AnimationActivity extends BaseActivity
                 });
             }
         });
+
+        // play music..
+        mPlayer = MediaPlayer.create(AnimationActivity.this, R.raw.summer);
+        mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        mPlayer.setLooping(true);
+        mPlayer.start();
     }
 
     @Override
@@ -185,5 +194,26 @@ public class AnimationActivity extends BaseActivity
     {
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mPlayerCurrentPos = mPlayer.getCurrentPosition();
+        mPlayer.pause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mPlayer.seekTo(mPlayerCurrentPos);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mPlayerCurrentPos = mPlayer.getCurrentPosition();
+        mPlayer.release();
+        mPlayer = null;
     }
 }
