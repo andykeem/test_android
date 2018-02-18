@@ -2,21 +2,25 @@ package com.apppartner.androidtest.chat;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 
 import com.apppartner.androidtest.BaseActivity;
 import com.apppartner.androidtest.MainActivity;
 import com.apppartner.androidtest.R;
+import com.apppartner.androidtest.api.ChatLogMessage;
 import com.apppartner.androidtest.api.ChatLogMessageModel;
-import com.apppartner.androidtest.helper.ChatFetchr;
+import com.apppartner.androidtest.helper.ChatClient;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * Screen that displays a list of chats from a chat log.
@@ -32,11 +36,9 @@ public class ChatActivity extends BaseActivity
     //==============================================================================================
 
     protected static final String TAG = ChatActivity.class.getSimpleName();
-
     private RecyclerView recyclerView;
     private ChatAdapter chatAdapter;
-
-    protected List<ChatLogMessageModel> mChatLogs = new ArrayList<>();
+    protected List<ChatLogMessageModel> mItems = new ArrayList<>();
 
     //==============================================================================================
     // Static Class Methods
@@ -56,8 +58,6 @@ public class ChatActivity extends BaseActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-
-        new ChatTask().execute();
 
         setContentView(R.layout.activity_chat);
 
@@ -97,6 +97,8 @@ public class ChatActivity extends BaseActivity
 
         // TODO: Retrieve the chat data from http://dev3.apppartner.com/AppPartnerDeveloperTest/scripts/chat_log.php
         // TODO: Parse this chat data from JSON into ChatLogMessageModel and display it.
+
+        loadChatLogMessages();
     }
 
     @Override
@@ -107,19 +109,24 @@ public class ChatActivity extends BaseActivity
     }
 
     protected void updateUI() {
-        chatAdapter.setChatLogMessageModelList(mChatLogs);
+        chatAdapter.setChatLogMessageModelList(mItems);
     }
 
-    private class ChatTask extends AsyncTask<Void, Void, List<ChatLogMessageModel>> {
-        @Override
-        protected List<ChatLogMessageModel> doInBackground(Void... params) {
-            List<ChatLogMessageModel> chatLogs = new ChatFetchr().fetchChatLogs();
-            return chatLogs;
-        }
-        @Override
-        protected void onPostExecute(List<ChatLogMessageModel> result) {
-            mChatLogs = result;
-            updateUI();
-        }
+    protected void loadChatLogMessages() {
+        ChatClient.ChatService service = new ChatClient().getChatService();
+        service.getMessages().enqueue(new Callback<ChatLogMessage>() {
+            @Override
+            public void onResponse(Call<ChatLogMessage> call, Response<ChatLogMessage> response) {
+                if (response.isSuccessful()) {
+                    mItems = response.body().data;
+                    updateUI();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ChatLogMessage> call, Throwable t) {
+                Log.e(TAG, t.getMessage(), t);
+            }
+        });
     }
 }

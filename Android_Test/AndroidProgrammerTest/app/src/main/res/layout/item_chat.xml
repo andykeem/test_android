@@ -11,8 +11,7 @@
               tools:ignore="UseCompoundDrawables"
               android:paddingLeft="@dimen/activity_vertical_margin"
               android:paddingRight="@dimen/activity_vertical_margin"
-              android:paddingBottom="9dp"
-              android:paddingTop="9dp">
+              android:paddingBottom="18dp">
 
     <ImageView
         android:id="@+id/avatarImageView"

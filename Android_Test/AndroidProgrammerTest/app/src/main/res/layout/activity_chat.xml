@@ -12,6 +12,6 @@
         android:scrollbars="vertical"
         tools:listitem="@layout/item_chat"
         android:clipToPadding="false"
-        android:paddingTop="@dimen/activity_vertical_margin"/>
+        android:paddingTop="24dp"/>
 
 </RelativeLayout>

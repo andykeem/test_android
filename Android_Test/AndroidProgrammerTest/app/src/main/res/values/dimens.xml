@@ -6,4 +6,5 @@
     <!-- Text Sizes -->
     <dimen name="button_text_size">14sp</dimen>
     <dimen name="fab_margin">16dp</dimen>
+    <dimen name="button_height">48dp</dimen>
 </resources>

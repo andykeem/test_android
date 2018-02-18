@@ -73,7 +73,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
         viewHolder.messageTextView.setText(chatLogMessageModel.message);
 
         // load avatar image using Picasso library..
-        String avatarUrl = chatLogMessageModel.getAvatarUrl();
+        String avatarUrl = chatLogMessageModel.avatar_url;
         Picasso.with(mContext).load(avatarUrl)
                 .transform(new CircleTransform())
                 .into(viewHolder.avatarImageView);
