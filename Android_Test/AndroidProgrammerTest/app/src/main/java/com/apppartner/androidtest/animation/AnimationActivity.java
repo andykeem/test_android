@@ -7,6 +7,7 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.SoundPool;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -50,11 +51,12 @@ public class AnimationActivity extends BaseActivity
     protected int mBtnFadeTop;
     protected MediaPlayer mPlayer;
     protected int mPlayerCurrentPos;
-    protected Thread mFireworksTask;
+    protected Thread mFireTask;
     protected ParticleSystem mParticleSystem;
-    protected SoundPool mFireworksSoundPool;
-    protected int mFireworksSoundID;
-    protected boolean mFireworksTaskRunning;
+    protected SoundPool mFireSound;
+    protected int mFireSoundID;
+    protected boolean mFireTaskRunning;
+    protected ImageView mIvFireworks;
 
     //==============================================================================================
     // Static Class Methods
@@ -200,13 +202,15 @@ public class AnimationActivity extends BaseActivity
         mPlayer.setLooping(true);
         mPlayer.start();
 
+        mIvFireworks = (ImageView) this.findViewById(R.id.fireworks);
+
         // render fireworks effect..
-        mFireworksTaskRunning = true;
-        mFireworksTask = new Thread(new Runnable() {
+        mFireTaskRunning = true;
+        mFireTask = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    while (mFireworksTaskRunning) {
+                    while (mFireTaskRunning) {
                         renderFireworks();
                         Thread.sleep(3000);
                     }
@@ -215,7 +219,7 @@ public class AnimationActivity extends BaseActivity
                 }
             }
         });
-        mFireworksTask.start();
+        mFireTask.start();
     }
 
     @Override
@@ -230,7 +234,7 @@ public class AnimationActivity extends BaseActivity
         super.onPause();
         mPlayerCurrentPos = mPlayer.getCurrentPosition();
         mPlayer.pause();
-        mFireworksTaskRunning = false;
+        mFireTaskRunning = false;
         this.stopSoundPool();
         this.stopFireworksTask();
     }
@@ -239,9 +243,7 @@ public class AnimationActivity extends BaseActivity
     protected void onResume() {
         super.onResume();
         mPlayer.seekTo(mPlayerCurrentPos);
-        if (mFireworksTaskRunning == false) {
-            mFireworksTaskRunning = true;
-        }
+        mFireTaskRunning = true;
     }
 
     @Override
@@ -250,7 +252,7 @@ public class AnimationActivity extends BaseActivity
         mPlayerCurrentPos = mPlayer.getCurrentPosition();
         mPlayer.release();
         mPlayer = null;
-        mFireworksTaskRunning = false;
+        mFireTaskRunning = false;
         this.stopSoundPool();
         this.stopFireworksTask();
     }
@@ -272,13 +274,14 @@ public class AnimationActivity extends BaseActivity
             @Override
             public void run() {
 
-                double n = (Math.random() * -1);
-                int emiterX = (int) (mDeviceWidth * n);
-                int emiterY = (int) (mDeviceHeight * n);
+                View anchor = mIvFireworks;
 
-                View emiter = new View(mContext);
-                emiter.setTop(emiterY);
-                emiter.setLeft(emiterX);
+                double n = (Math.random());
+                int anchorX = ((int) (mDeviceWidth * n));
+                int anchorY = ((int) (mIvLogo.getHeight() * n));
+                
+                anchor.setLeft(anchorX);
+                anchor.setTop(anchorY);
 
                 ParticleSystem ps = new ParticleSystem(AnimationActivity.this, 100,
                         R.drawable.star_pink, 800);
@@ -286,7 +289,7 @@ public class AnimationActivity extends BaseActivity
                 ps.setSpeedRange(0.1f, 0.25f);
                 ps.setRotationSpeedRange(90, 180);
                 ps.setFadeOut(200, new AccelerateInterpolator());
-                ps.oneShot(emiter, 70);
+                ps.oneShot(anchor, 70);
 
                 ps = new ParticleSystem(AnimationActivity.this, 100,
                         R.drawable.star_white, 800);
@@ -294,15 +297,15 @@ public class AnimationActivity extends BaseActivity
                 ps.setSpeedRange(0.1f, 0.25f);
                 ps.setRotationSpeedRange(90, 180);
                 ps.setFadeOut(200, new AccelerateInterpolator());
-                ps.oneShot(emiter, 70);
+                ps.oneShot(anchor, 70);
 
                 // add fireworks sound..
-                mFireworksSoundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
-                mFireworksSoundID = mFireworksSoundPool.load(mContext, R.raw.fireworks, 1);
-                mFireworksSoundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
+                mFireSound = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
+                mFireSoundID = mFireSound.load(mContext, R.raw.fireworks, 1);
+                mFireSound.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
                     @Override
                     public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
-                        soundPool.play(mFireworksSoundID, 1.0f, 1.0f, 1, 0, 1.0f);
+                        soundPool.play(mFireSoundID, 1.0f, 1.0f, 1, 0, 1.0f);
                     }
                 });
             }
@@ -310,19 +313,21 @@ public class AnimationActivity extends BaseActivity
     }
 
     protected void stopSoundPool() {
-        if (mFireworksSoundPool != null) {
-            mFireworksSoundPool.release();
-            mFireworksSoundPool.stop(mFireworksSoundID);
-            mFireworksSoundPool = null;
+        if (mFireSound != null) {
+            mFireSound.release();
+            mFireSound.stop(mFireSoundID);
+            mFireSound = null;
         }
     }
 
     protected void stopFireworksTask() {
-        if ((mFireworksTaskRunning != true) && (mFireworksTask != null)) {
+        if ((mFireTaskRunning != true) && (mFireTask != null)) {
             try {
-                mFireworksTask.join();
+                mFireTask.join();
             } catch (InterruptedException ie) {
                 Log.e(TAG, ie.getMessage(), ie);
+            } finally {
+                mFireTask = null;
             }
         }
     }
