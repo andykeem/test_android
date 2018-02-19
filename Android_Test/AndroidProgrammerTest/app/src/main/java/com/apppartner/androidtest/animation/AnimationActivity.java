@@ -20,6 +20,9 @@ import android.widget.RelativeLayout;
 import com.apppartner.androidtest.BaseActivity;
 import com.apppartner.androidtest.MainActivity;
 import com.apppartner.androidtest.R;
+import com.plattysoft.leonids.ParticleSystem;
+
+import java.util.Random;
 
 /**
  * Screen that displays the AppPartner icon.
@@ -41,12 +44,14 @@ public class AnimationActivity extends BaseActivity
     protected Button mBtnFade;
     protected ImageView mIvLogo;
     protected int mDeviceWidth;
+    protected int mDeviceHeight;
     protected int mDeltaX;
     protected int mDeltaY;
     protected int mBtnFadeTop;
     protected MediaPlayer mPlayer;
     protected int mPlayerCurrentPos;
-    protected Handler mMusicHandler;
+    protected Random mRandom;
+    protected ParticleSystem mParticleSystem;
 
     //==============================================================================================
     // Static Class Methods
@@ -88,7 +93,7 @@ public class AnimationActivity extends BaseActivity
         Point outSize = new Point();
         this.getWindowManager().getDefaultDisplay().getSize(outSize);
         mDeviceWidth = outSize.x;
-
+        mDeviceHeight = outSize.y;
         mIvLogo = (ImageView) this.findViewById(R.id.iv_app_partner_logo);
         mIvLogo.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -98,9 +103,6 @@ public class AnimationActivity extends BaseActivity
                 int action = motionEvent.getAction();
                 switch (action & MotionEvent.ACTION_MASK) {
                     case MotionEvent.ACTION_DOWN:
-                    case MotionEvent.ACTION_UP:
-                    case MotionEvent.ACTION_POINTER_DOWN:
-                    case MotionEvent.ACTION_POINTER_UP:
                         RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) view.getLayoutParams();
                         lp.addRule(RelativeLayout.CENTER_IN_PARENT, 0);
                         if (lp.leftMargin == 0) {
@@ -143,7 +145,15 @@ public class AnimationActivity extends BaseActivity
                         // handle bottom right shrinking issue..
                         lParams.bottomMargin = (viewHeight * -1);
                         lParams.rightMargin = (viewWidth * -1);
+
+                        loadParticles(leftMargin, topMargin);
                         view.setLayoutParams(lParams);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        if (mParticleSystem != null) {
+                            mParticleSystem.stopEmitting();
+                            mParticleSystem.cancel();
+                        }
                         break;
                 }
                 mAnimContainer.invalidate();
@@ -187,6 +197,11 @@ public class AnimationActivity extends BaseActivity
         mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         mPlayer.setLooping(true);
         mPlayer.start();
+
+        // load particles..
+        mRandom = new Random();
+//        loadFirstParticles();
+//        loadSecondParticles();
     }
 
     @Override
@@ -215,5 +230,62 @@ public class AnimationActivity extends BaseActivity
         mPlayerCurrentPos = mPlayer.getCurrentPosition();
         mPlayer.release();
         mPlayer = null;
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putInt("curr_pos", mPlayerCurrentPos);
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        mPlayerCurrentPos = savedInstanceState.getInt("curr_pos");
+    }
+
+    protected int[] getParticlesDrawableResIds() {
+        return new int[]{R.drawable.firework_red0, R.drawable.firework_red1,
+                R.drawable.firework_red2, R.drawable.firework_red3, R.drawable.firework_red4,
+                R.drawable.firework_red5, R.drawable.firework_red6, R.drawable.firework_red7};
+    }
+
+    protected void loadParticles(int emiterX, int emiterY) {
+        int numParticles = 100;
+        long timeToLive = 5000;
+        int[] resIds = this.getParticlesDrawableResIds();
+        int i = mRandom.nextInt(resIds.length);
+        int drawableResId = resIds[0];
+        new ParticleSystem(AnimationActivity.this, numParticles, drawableResId, timeToLive)
+                .setSpeedRange(0.2f, 0.5f)
+                .setFadeOut(timeToLive)
+                .emit(emiterX, emiterY, numParticles);
+    }
+
+    protected void loadFirstParticles() {
+        int numParticles = 1000;
+        long timeToLive = 1000;
+        int[] resIds = this.getParticlesDrawableResIds();
+        int i = mRandom.nextInt(resIds.length);
+        int drawableResId = resIds[i];
+        int emiterX = 0; // (mDeviceWidth / 4);
+        int emiterY = 0; // (mDeviceHeight / 4);
+        mParticleSystem = new ParticleSystem(AnimationActivity.this, numParticles, drawableResId, timeToLive);
+        mParticleSystem.setSpeedRange(0.2f, 0.5f)
+                .emit(emiterX, emiterY, numParticles);
+    }
+
+    protected void loadSecondParticles() {
+        int numParticles = 1000;
+        long timeToLive = 2000;
+        int[] resIds = this.getParticlesDrawableResIds();
+        int i = mRandom.nextInt(resIds.length);
+        int drawableResId = resIds[i];
+        int emiterX = mDeviceWidth; // ((mDeviceWidth / 4) * 3);
+        int emiterY = 0; // (mDeviceHeight / 4);
+        new ParticleSystem(AnimationActivity.this, numParticles, drawableResId, timeToLive)
+                .setSpeedRange(0.2f, 0.5f)
+//                .emit(mAnimContainer, numParticles);
+                .emit(emiterX, emiterY, numParticles);
     }
 }
