@@ -5,9 +5,10 @@ import android.content.Intent;
 import android.graphics.Point;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.SoundPool;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.app.ActionBar;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
@@ -21,8 +22,6 @@ import com.apppartner.androidtest.BaseActivity;
 import com.apppartner.androidtest.MainActivity;
 import com.apppartner.androidtest.R;
 import com.plattysoft.leonids.ParticleSystem;
-
-import java.util.Random;
 
 /**
  * Screen that displays the AppPartner icon.
@@ -40,6 +39,7 @@ public class AnimationActivity extends BaseActivity
     protected static final String TAG = AnimationActivity.class.getSimpleName();
     protected static final long FADE_ANIM_DURATION_MILLIS = 5000;
 
+    protected Context mContext;
     protected View mAnimContainer;
     protected Button mBtnFade;
     protected ImageView mIvLogo;
@@ -50,8 +50,11 @@ public class AnimationActivity extends BaseActivity
     protected int mBtnFadeTop;
     protected MediaPlayer mPlayer;
     protected int mPlayerCurrentPos;
-    protected Random mRandom;
+    protected Thread mFireworksTask;
     protected ParticleSystem mParticleSystem;
+    protected SoundPool mFireworksSoundPool;
+    protected int mFireworksSoundID;
+    protected boolean mFireworksTaskRunning;
 
     //==============================================================================================
     // Static Class Methods
@@ -89,6 +92,7 @@ public class AnimationActivity extends BaseActivity
 
         // TODO: Add a bonus to make yourself stick out. Music, color, fireworks, explosions!!!
 
+        mContext = this;
         mAnimContainer = this.findViewById(R.id.anim_container);
         Point outSize = new Point();
         this.getWindowManager().getDefaultDisplay().getSize(outSize);
@@ -145,8 +149,6 @@ public class AnimationActivity extends BaseActivity
                         // handle bottom right shrinking issue..
                         lParams.bottomMargin = (viewHeight * -1);
                         lParams.rightMargin = (viewWidth * -1);
-
-                        loadParticles(leftMargin, topMargin);
                         view.setLayoutParams(lParams);
                         break;
                     case MotionEvent.ACTION_UP:
@@ -198,10 +200,22 @@ public class AnimationActivity extends BaseActivity
         mPlayer.setLooping(true);
         mPlayer.start();
 
-        // load particles..
-        mRandom = new Random();
-//        loadFirstParticles();
-//        loadSecondParticles();
+        // render fireworks effect..
+        mFireworksTaskRunning = true;
+        mFireworksTask = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    while (mFireworksTaskRunning) {
+                        renderFireworks();
+                        Thread.sleep(3000);
+                    }
+                } catch (InterruptedException ie) {
+                    Log.e(TAG, ie.getMessage(), ie);
+                }
+            }
+        });
+        mFireworksTask.start();
     }
 
     @Override
@@ -216,12 +230,18 @@ public class AnimationActivity extends BaseActivity
         super.onPause();
         mPlayerCurrentPos = mPlayer.getCurrentPosition();
         mPlayer.pause();
+        mFireworksTaskRunning = false;
+        this.stopSoundPool();
+        this.stopFireworksTask();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         mPlayer.seekTo(mPlayerCurrentPos);
+        if (mFireworksTaskRunning == false) {
+            mFireworksTaskRunning = true;
+        }
     }
 
     @Override
@@ -230,6 +250,9 @@ public class AnimationActivity extends BaseActivity
         mPlayerCurrentPos = mPlayer.getCurrentPosition();
         mPlayer.release();
         mPlayer = null;
+        mFireworksTaskRunning = false;
+        this.stopSoundPool();
+        this.stopFireworksTask();
     }
 
     @Override
@@ -244,48 +267,63 @@ public class AnimationActivity extends BaseActivity
         mPlayerCurrentPos = savedInstanceState.getInt("curr_pos");
     }
 
-    protected int[] getParticlesDrawableResIds() {
-        return new int[]{R.drawable.firework_red0, R.drawable.firework_red1,
-                R.drawable.firework_red2, R.drawable.firework_red3, R.drawable.firework_red4,
-                R.drawable.firework_red5, R.drawable.firework_red6, R.drawable.firework_red7};
+    protected void renderFireworks() {
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+                double n = (Math.random() * -1);
+                int emiterX = (int) (mDeviceWidth * n);
+                int emiterY = (int) (mDeviceHeight * n);
+
+                View emiter = new View(mContext);
+                emiter.setTop(emiterY);
+                emiter.setLeft(emiterX);
+
+                ParticleSystem ps = new ParticleSystem(AnimationActivity.this, 100,
+                        R.drawable.star_pink, 800);
+                ps.setScaleRange(0.7f, 1.3f);
+                ps.setSpeedRange(0.1f, 0.25f);
+                ps.setRotationSpeedRange(90, 180);
+                ps.setFadeOut(200, new AccelerateInterpolator());
+                ps.oneShot(emiter, 70);
+
+                ps = new ParticleSystem(AnimationActivity.this, 100,
+                        R.drawable.star_white, 800);
+                ps.setScaleRange(0.7f, 1.3f);
+                ps.setSpeedRange(0.1f, 0.25f);
+                ps.setRotationSpeedRange(90, 180);
+                ps.setFadeOut(200, new AccelerateInterpolator());
+                ps.oneShot(emiter, 70);
+
+                // add fireworks sound..
+                mFireworksSoundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
+                mFireworksSoundID = mFireworksSoundPool.load(mContext, R.raw.fireworks, 1);
+                mFireworksSoundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
+                    @Override
+                    public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
+                        soundPool.play(mFireworksSoundID, 1.0f, 1.0f, 1, 0, 1.0f);
+                    }
+                });
+            }
+        });
     }
 
-    protected void loadParticles(int emiterX, int emiterY) {
-        int numParticles = 100;
-        long timeToLive = 5000;
-        int[] resIds = this.getParticlesDrawableResIds();
-        int i = mRandom.nextInt(resIds.length);
-        int drawableResId = resIds[0];
-        new ParticleSystem(AnimationActivity.this, numParticles, drawableResId, timeToLive)
-                .setSpeedRange(0.2f, 0.5f)
-                .setFadeOut(timeToLive)
-                .emit(emiterX, emiterY, numParticles);
+    protected void stopSoundPool() {
+        if (mFireworksSoundPool != null) {
+            mFireworksSoundPool.release();
+            mFireworksSoundPool.stop(mFireworksSoundID);
+            mFireworksSoundPool = null;
+        }
     }
 
-    protected void loadFirstParticles() {
-        int numParticles = 1000;
-        long timeToLive = 1000;
-        int[] resIds = this.getParticlesDrawableResIds();
-        int i = mRandom.nextInt(resIds.length);
-        int drawableResId = resIds[i];
-        int emiterX = 0; // (mDeviceWidth / 4);
-        int emiterY = 0; // (mDeviceHeight / 4);
-        mParticleSystem = new ParticleSystem(AnimationActivity.this, numParticles, drawableResId, timeToLive);
-        mParticleSystem.setSpeedRange(0.2f, 0.5f)
-                .emit(emiterX, emiterY, numParticles);
-    }
-
-    protected void loadSecondParticles() {
-        int numParticles = 1000;
-        long timeToLive = 2000;
-        int[] resIds = this.getParticlesDrawableResIds();
-        int i = mRandom.nextInt(resIds.length);
-        int drawableResId = resIds[i];
-        int emiterX = mDeviceWidth; // ((mDeviceWidth / 4) * 3);
-        int emiterY = 0; // (mDeviceHeight / 4);
-        new ParticleSystem(AnimationActivity.this, numParticles, drawableResId, timeToLive)
-                .setSpeedRange(0.2f, 0.5f)
-//                .emit(mAnimContainer, numParticles);
-                .emit(emiterX, emiterY, numParticles);
+    protected void stopFireworksTask() {
+        if ((mFireworksTaskRunning != true) && (mFireworksTask != null)) {
+            try {
+                mFireworksTask.join();
+            } catch (InterruptedException ie) {
+                Log.e(TAG, ie.getMessage(), ie);
+            }
+        }
     }
 }
