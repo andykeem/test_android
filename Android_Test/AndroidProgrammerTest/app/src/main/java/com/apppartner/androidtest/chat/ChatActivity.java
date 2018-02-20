@@ -106,6 +106,7 @@ public class ChatActivity extends BaseActivity
     {
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
+        finish();
     }
 
     protected void updateUI() {

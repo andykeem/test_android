@@ -279,7 +279,7 @@ public class AnimationActivity extends BaseActivity
                 double n = (Math.random());
                 int anchorX = ((int) (mDeviceWidth * n));
                 int anchorY = ((int) (mIvLogo.getHeight() * n));
-                
+
                 anchor.setLeft(anchorX);
                 anchor.setTop(anchorY);
 
